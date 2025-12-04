@@ -1,5 +1,12 @@
+// lib/pages/course_management_page.dart
 import 'package:flutter/material.dart';
 import '/pages/add_course_page.dart';
+import '/models/course.dart';
+import '/components/teacherdashboard/top_navigation_bar.dart';
+import '/components/coursemanagement/page_header.dart';
+import '/components/coursemanagement/search_and_filters.dart';
+import '/components/coursemanagement/courses_table.dart';
+import '/components/coursemanagement/course_actions_modal.dart';
 
 class CourseManagementPage extends StatefulWidget {
   const CourseManagementPage({super.key});
@@ -10,7 +17,9 @@ class CourseManagementPage extends StatefulWidget {
 
 class _CourseManagementPageState extends State<CourseManagementPage> {
   final _searchController = TextEditingController();
-  List<Course> _courses = [
+  bool _darkMode = false;
+  
+  final List<Course> _courses = [
     Course(
       title: 'Introduction to Graphic Design',
       thumbnailUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAN3iiCFJocNzPdGMTEUfQp2yuGAh4Q83TL6VHXn7G5MP_0YjeoHwUtz4JarU4CtABtB_g_4cUVxNY3hQnSN5dsGZpOl1RAPNAirJi3K7gDgVPOqZcKhAoZctkE9ytslrGHmKu3XGmtOouxmw8R5fZ6H1Zz_0YUAQvxZe4VUqdk_NHpbH7iGhZ3VaAms1B0PWoZ3nejf0caxY83HFQya1JMGByA9jVCufNBxUr3P6L2YRoy2xMASkhHYvkPlFNCcDYhhz5ST5xFzcQ',
@@ -41,566 +50,100 @@ class _CourseManagementPageState extends State<CourseManagementPage> {
     ),
   ];
 
+  void _toggleDarkMode() {
+    setState(() {
+      _darkMode = !_darkMode;
+    });
+  }
+
+  void _handleNavigation(String route) {
+    if (route == 'dashboard') {
+      Navigator.pop(context);
+    }
+    // Handle other navigation routes
+  }
+
+  void _navigateToAddCourse() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => const AddCoursePage(),
+      ),
+    );
+  }
+
+  void _handleCourseAction(Course course) {
+    CourseActionsModal.show(context, course);
+  }
+
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    
-    return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF111621) : const Color(0xFFf6f6f8),
-      body: Column(
-        children: [
-          // Top Navigation Bar
-          _buildTopNavBar(isDark),
-          // Main Content
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(32),
-              child: Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 1200),
-                  child: Column(
-                    children: [
-                      // Page Header
-                      _buildPageHeader(isDark),
-                      const SizedBox(height: 24),
-                      
-                      // Search and Filters
-                      _buildSearchAndFilters(isDark),
-                      const SizedBox(height: 24),
-                      
-                      // Courses Table
-                      _buildCoursesTable(isDark),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData.light().copyWith(
+        colorScheme: const ColorScheme.light(
+          primary: Color(0xFF2463eb),
+          surface: Color(0xFFf6f6f8),
+        ),
+        scaffoldBackgroundColor: const Color(0xFFf6f6f8),
       ),
-    );
-  }
-
-  Widget _buildTopNavBar(bool isDark) {
-    return Container(
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF111621) : Colors.white,
-        border: Border(
-          bottom: BorderSide(
-            color: isDark ? Colors.grey[700]! : Colors.grey[200]!,
-          ),
+      darkTheme: ThemeData.dark().copyWith(
+        colorScheme: const ColorScheme.dark(
+          primary: Color(0xFF2463eb),
+          surface: Color(0xFF111621),
         ),
+        scaffoldBackgroundColor: const Color(0xFF111621),
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 12),
-      child: Row(
-        children: [
-          // Logo and Brand
-          _buildBrandSection(isDark),
-          const Spacer(),
-          
-          // Navigation Links
-          _buildNavigationLinks(isDark),
-          const SizedBox(width: 32),
-          
-          // Action Buttons
-          _buildActionButtons(isDark),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildBrandSection(bool isDark) {
-    return Row(
-      children: [
-        Container(
-          width: 24,
-          height: 24,
-          color: const Color(0xFF2463eb),
-          child: const Icon(
-            Icons.school,
-            color: Colors.white,
-            size: 16,
-          ),
-        ),
-        const SizedBox(width: 16),
-        Text(
-          'E-Learning Platform',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: isDark ? Colors.white : const Color(0xFF111318),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildNavigationLinks(bool isDark) {
-    return Row(
-      children: [
-        _buildNavLink('Dashboard', isActive: false, isDark: isDark),
-        const SizedBox(width: 36),
-        _buildNavLink('Courses', isActive: true, isDark: isDark),
-        const SizedBox(width: 36),
-        _buildNavLink('Students', isActive: false, isDark: isDark),
-        const SizedBox(width: 36),
-        _buildNavLink('Analytics', isActive: false, isDark: isDark),
-      ],
-    );
-  }
-
-  Widget _buildNavLink(String text, {bool isActive = false, required bool isDark}) {
-    return Text(
-      text,
-      style: TextStyle(
-        fontSize: 14,
-        fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
-        color: isActive 
-            ? const Color(0xFF2463eb)
-            : (isDark ? Colors.grey[300] : const Color(0xFF616e89)),
-      ),
-    );
-  }
-
-  Widget _buildActionButtons(bool isDark) {
-    return Row(
-      children: [
-        // Notifications
-        Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(8),
-            color: isDark ? const Color(0xFF1a202c) : const Color(0xFFf0f1f4),
-          ),
-          child: IconButton(
-            icon: const Icon(Icons.notifications),
-            iconSize: 20,
-            color: isDark ? Colors.grey[200] : const Color(0xFF111318),
-            onPressed: () {},
-            padding: EdgeInsets.zero,
-          ),
-        ),
-        const SizedBox(width: 16),
-        
-        // User Avatar
-        Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            image: DecorationImage(
-              image: NetworkImage(
-                'https://lh3.googleusercontent.com/aida-public/AB6AXuAoL-6FniSR1nBwFqUZamxYjivUPlP5dApzZWKovGhcUmkVqy6oqxXRAdUfG15eNxo6w-qoxkP0EvzO2dw-aTBpuKIuQb4jCRivjsCAdviqFI04XYb8M9nASogPkuiZhMvT1UXI22SWXYiFHIfwjmirF3PR495ncHOq9UudYhyi-T-IVQLLnhVNiYKwF6mLw8U15qyQjagVUr-JHECxlTYw3K5LwaLIaO_18hpeZTVEoPl0nFaC1a-6ZeqcHubBeXHFMrM6SY38oR8',
-              ),
-              fit: BoxFit.cover,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildPageHeader(bool isDark) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+      themeMode: _darkMode ? ThemeMode.dark : ThemeMode.light,
+      home: Scaffold(
+        body: Column(
           children: [
-            Text(
-              'Course Management',
-              style: TextStyle(
-                fontSize: 32,
-                fontWeight: FontWeight.w900,
-                color: isDark ? Colors.white : const Color(0xFF111318),
-                height: 1.2,
-              ),
+            TopNavigationBar(
+              darkMode: _darkMode,
+              onToggleDarkMode: _toggleDarkMode,
+              onNavigate: _handleNavigation,
+              currentRoute: 'courses',
             ),
-            const SizedBox(height: 4),
-            Text(
-              'Manage, edit, and analyze your course performance.',
-              style: TextStyle(
-                fontSize: 16,
-                color: isDark ? Colors.grey[400] : const Color(0xFF616e89),
-              ),
-            ),
-          ],
-        ),
-        Container(
-          height: 40,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(8),
-            color: const Color(0xFF2463eb),
-          ),
-          child: TextButton.icon(
-            onPressed: () {
-              // Navigate to add course page
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) => const AddCoursePage()),
-              );
-            },
-            icon: const Icon(
-              Icons.add_circle,
-              size: 20,
-              color: Colors.white,
-            ),
-            label: const Text(
-              'Create New Course',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSearchAndFilters(bool isDark) {
-    return Column(
-      children: [
-        // Search Bar
-        Row(
-          children: [
             Expanded(
-              child: Container(
-                height: 48,
-                decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF111621) : Colors.white,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: TextField(
-                  controller: _searchController,
-                  decoration: InputDecoration(
-                    hintText: 'Search by course title...',
-                    hintStyle: TextStyle(
-                      color: isDark ? Colors.grey[400] : const Color(0xFF616e89),
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(32),
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 1200),
+                    child: Column(
+                      children: [
+                        PageHeader(
+                          title: 'Course Management',
+                          subtitle: 'Manage, edit, and analyze your course performance.',
+                          buttonText: 'Create New Course',
+                          buttonIcon: Icons.add_circle,
+                          onButtonPressed: _navigateToAddCourse,
+                          darkMode: _darkMode,
+                        ),
+                        const SizedBox(height: 24),
+                        SearchAndFilters(
+                          searchController: _searchController,
+                          darkMode: _darkMode,
+                          onSearchChanged: (value) {
+                            // Implement search functionality
+                          },
+                          onStatusFilterPressed: () {},
+                          onCategoryFilterPressed: () {},
+                        ),
+                        const SizedBox(height: 24),
+                        CoursesTable(
+                          courses: _courses,
+                          darkMode: _darkMode,
+                          onCourseAction: _handleCourseAction,
+                        ),
+                      ],
                     ),
-                    prefixIcon: Icon(
-                      Icons.search,
-                      color: isDark ? Colors.grey[400] : const Color(0xFF616e89),
-                    ),
-                    border: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16),
                   ),
-                  style: TextStyle(
-                    color: isDark ? Colors.grey[200] : const Color(0xFF111318),
-                    fontSize: 16,
-                  ),
-                  onChanged: (value) {
-                    // Implement search functionality
-                  },
                 ),
               ),
             ),
           ],
         ),
-        const SizedBox(height: 16),
-        // Filters
-        Row(
-          children: [
-            _buildFilterButton(
-              text: 'Status: All',
-              isDark: isDark,
-              onPressed: () {},
-            ),
-            const SizedBox(width: 12),
-            _buildFilterButton(
-              text: 'Category',
-              isDark: isDark,
-              onPressed: () {},
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildFilterButton({
-    required String text,
-    required bool isDark,
-    required VoidCallback onPressed,
-  }) {
-    return Container(
-      height: 48,
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF111621) : Colors.white,
-        borderRadius: BorderRadius.circular(8),
       ),
-      child: TextButton(
-        onPressed: onPressed,
-        style: TextButton.styleFrom(
-          foregroundColor: isDark ? Colors.grey[200] : const Color(0xFF111318),
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-        ),
-        child: Row(
-          children: [
-            Text(
-              text,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            const SizedBox(width: 8),
-            Icon(
-              Icons.expand_more,
-              size: 20,
-              color: isDark ? Colors.grey[400] : const Color(0xFF616e89),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCoursesTable(bool isDark) {
-    return Container(
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF111621) : Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: isDark ? Colors.grey[700]! : Colors.grey[200]!,
-        ),
-      ),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(minWidth: 800),
-          child: DataTable(
-            headingRowColor: MaterialStateProperty.resolveWith<Color?>(
-              (Set<MaterialState> states) {
-                return isDark ? Colors.grey[800]!.withOpacity(0.5) : Colors.grey[50];
-              },
-            ),
-            dataRowColor: MaterialStateProperty.resolveWith<Color?>(
-              (Set<MaterialState> states) {
-                return isDark ? const Color(0xFF111621) : Colors.white;
-              },
-            ),
-            columns: [
-              DataColumn(
-                label: Text(
-                  'COURSE TITLE',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                    color: isDark ? Colors.grey[400] : const Color(0xFF616e89),
-                  ),
-                ),
-              ),
-              DataColumn(
-                label: Text(
-                  'STUDENTS',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                    color: isDark ? Colors.grey[400] : const Color(0xFF616e89),
-                  ),
-                ),
-              ),
-              DataColumn(
-                label: Text(
-                  'STATUS',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                    color: isDark ? Colors.grey[400] : const Color(0xFF616e89),
-                  ),
-                ),
-              ),
-              DataColumn(
-                label: Text(
-                  'ACTIONS',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                    color: isDark ? Colors.grey[400] : const Color(0xFF616e89),
-                  ),
-                ),
-              ),
-            ],
-            rows: _courses.map((course) => _buildCourseRow(course, isDark)).toList(),
-          ),
-        ),
-      ),
-    );
-  }
-
-  DataRow _buildCourseRow(Course course, bool isDark) {
-    return DataRow(
-      cells: [
-        DataCell(
-          Row(
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(6),
-                  image: DecorationImage(
-                    image: NetworkImage(course.thumbnailUrl),
-                    fit: BoxFit.cover,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 16),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    course.title,
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: isDark ? Colors.white : const Color(0xFF111318),
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    'Created on ${course.createdDate}',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: isDark ? Colors.grey[400] : const Color(0xFF616e89),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-        DataCell(
-          Text(
-            course.students.toString(),
-            style: TextStyle(
-              fontSize: 14,
-              color: isDark ? Colors.grey[400] : const Color(0xFF616e89),
-            ),
-          ),
-        ),
-        DataCell(
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(
-              color: _getStatusColor(course.status, isDark),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Text(
-              _getStatusText(course.status),
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-                color: _getStatusTextColor(course.status, isDark),
-              ),
-            ),
-          ),
-        ),
-        DataCell(
-          IconButton(
-            icon: Icon(
-              Icons.more_vert,
-              size: 20,
-              color: isDark ? Colors.grey[400] : const Color(0xFF616e89),
-            ),
-            onPressed: () {
-              _showCourseActions(course);
-            },
-          ),
-        ),
-      ],
-    );
-  }
-
-  Color _getStatusColor(CourseStatus status, bool isDark) {
-    switch (status) {
-      case CourseStatus.published:
-        return isDark ? const Color(0xFF166534) : const Color(0xFFdcfce7);
-      case CourseStatus.draft:
-        return isDark ? const Color(0xFF374151) : const Color(0xFFf3f4f6);
-      case CourseStatus.archived:
-        return isDark ? const Color(0xFF854d0e) : const Color(0xFFfef9c3);
-    }
-  }
-
-  Color _getStatusTextColor(CourseStatus status, bool isDark) {
-    switch (status) {
-      case CourseStatus.published:
-        return isDark ? const Color(0xFF4ade80) : const Color(0xFF166534);
-      case CourseStatus.draft:
-        return isDark ? const Color(0xFFd1d5db) : const Color(0xFF374151);
-      case CourseStatus.archived:
-        return isDark ? const Color(0xFFfacc15) : const Color(0xFF854d0e);
-    }
-  }
-
-  String _getStatusText(CourseStatus status) {
-    switch (status) {
-      case CourseStatus.published:
-        return 'Published';
-      case CourseStatus.draft:
-        return 'Draft';
-      case CourseStatus.archived:
-        return 'Archived';
-    }
-  }
-
-  void _showCourseActions(Course course) {
-    showModalBottomSheet(
-      context: context,
-      builder: (context) {
-        return Container(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                leading: const Icon(Icons.edit),
-                title: const Text('Edit Course'),
-                onTap: () {
-                  Navigator.pop(context);
-                  // Navigate to edit course
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.visibility),
-                title: const Text('View Course'),
-                onTap: () {
-                  Navigator.pop(context);
-                  // Navigate to view course
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.people),
-                title: const Text('Manage Students'),
-                onTap: () {
-                  Navigator.pop(context);
-                  // Navigate to manage students
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.archive),
-                title: const Text('Archive Course'),
-                onTap: () {
-                  Navigator.pop(context);
-                  // Archive course
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.delete, color: Colors.red),
-                title: const Text('Delete Course', style: TextStyle(color: Colors.red)),
-                onTap: () {
-                  Navigator.pop(context);
-                  // Delete course
-                },
-              ),
-            ],
-          ),
-        );
-      },
     );
   }
 
@@ -609,27 +152,4 @@ class _CourseManagementPageState extends State<CourseManagementPage> {
     _searchController.dispose();
     super.dispose();
   }
-}
-
-// Data Models
-class Course {
-  final String title;
-  final String thumbnailUrl;
-  final int students;
-  final CourseStatus status;
-  final String createdDate;
-
-  Course({
-    required this.title,
-    required this.thumbnailUrl,
-    required this.students,
-    required this.status,
-    required this.createdDate,
-  });
-}
-
-enum CourseStatus {
-  published,
-  draft,
-  archived,
 }
