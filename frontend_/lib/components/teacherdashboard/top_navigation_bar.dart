@@ -120,6 +120,13 @@ class _NavigationLinks extends StatelessWidget {
         ),
         const SizedBox(width: 32),
         NavLink(
+          text: 'Exams',
+          isActive: currentRoute == 'exams',
+          darkMode: darkMode,
+          onTap: () => onNavigate('exams'),
+        ),
+        const SizedBox(width: 32),
+        NavLink(
           text: 'Students',
           isActive: currentRoute == 'students',
           darkMode: darkMode,

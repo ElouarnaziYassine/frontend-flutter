@@ -1,5 +1,6 @@
+import 'pages/create_exam_page.dart';
 import 'package:flutter/material.dart';
-import '/pages/course_management_page.dart';
+import 'pages/course_management_page.dart';
 import 'pages/add_course_page.dart';
 import 'pages/login_page.dart';
 import 'pages/teacher_dashboard.dart';
@@ -37,7 +38,8 @@ class MyApp extends StatelessWidget {
         '/login': (context) => const LoginPage(),
         '/dashboard': (context) => const TeacherDashboard(),
         '/add-course': (context) => const AddCoursePage(),
-        '/course-management': (context) => const CourseManagementPage()
+        '/course-management': (context) => const CourseManagementPage(),
+        '/exams': (context) => const CreateExamPage(),
       },
     );
   }
